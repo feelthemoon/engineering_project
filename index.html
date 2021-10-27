@@ -12,11 +12,26 @@
   </head>
   <body>
     <div class="btns">
-        <button class="btn">Anfas right</button>
-        <button class="btn">Fas</button>
-        <button class="btn">Profile right</button>
-        <button class="btn">Profile left</button>
-        <button class="btn">Anfas left</button>
+      <button class="btn">3/4 right</button>
+      <button class="btn">Fas</button>
+      <button class="btn">Profile right</button>
+      <button class="btn">Profile left</button>
+      <button class="btn">3/4 left</button>
+      <button class="btn" id="start_animation">Запустить анимацию</button>
+    </div>
+    <div class="overlay"></div>
+    <div class="modal">
+      <form class="modal__body">
+        <label>
+          <span>Горизонтальный радиус</span>
+          <input type="text" id="horizontal">
+        </label>
+        <label>
+          <span>Вертикальный радиус</span>
+          <input type="text" id="vertical">
+        </label>
+        <button id="submit" type="button" class="modal__submit">Применить</button>
+      </form>
     </div>
     <script type="module" src="scripts/main.js"></script>
   </body>

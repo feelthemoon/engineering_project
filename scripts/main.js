@@ -1,51 +1,82 @@
 import * as THREE from "https://cdn.skypack.dev/three";
 import { OrbitControls } from "https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js";
 import { FBXLoader } from "https://cdn.skypack.dev/three/examples/jsm/loaders/FBXLoader.js";
-import { GUI } from "https://cdn.skypack.dev/three/examples/jsm/libs/dat.gui.module.js";
 import Stats from "https://cdn.skypack.dev/three/examples/jsm/libs/stats.module.js";
 
-let camera, scene, renderer, mixer, actions, stats;
-let settings, settings1, spotLight, dirLight, spotLightHelper, dirLightHelper;
+let camera, scene, renderer, stats, mesh;
+let spotLight, dirLight, spotLightHelper, dirLightHelper;
 
-GUI.TEXT_CLOSED = "Свернуть панель";
-GUI.TEXT_OPEN = "Развернуть панель";
+let clock = new THREE.Clock();
+let angle = 0; // текущий угол
+let angularSpeed = THREE.Math.degToRad(45); // угловая скорость - градусов в секунду
+let delta = 12;
 
+
+let horizontalRadius = 120;
+let verticalRadius = 200;
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Escape') {
+    document.querySelector('.modal').classList.remove('active');
+    document.querySelector('.overlay').classList.remove('active');
+  }
+})
+document.getElementById('start_animation').addEventListener('click', () => {
+  document.querySelector('.modal').classList.add('active');
+  document.querySelector('.overlay').classList.add('active');
+})
+document.getElementById('submit').addEventListener('click', () => {
+  document.querySelector('.modal').classList.remove('active');
+  document.querySelector('.overlay').classList.remove('active');
+
+  horizontalRadius = +document.getElementById('horizontal').value;
+  verticalRadius = +document.getElementById('vertical').value;
+
+})
+document.querySelector('.overlay').addEventListener('click', () => {
+  document.querySelector('.modal').classList.remove('active');
+  document.querySelector('.overlay').classList.remove('active');
+});
 init();
 animate();
-createPanel();
 
 function init() {
   const container = document.createElement("div");
   document.body.appendChild(container);
 
   camera = new THREE.PerspectiveCamera(
-    45,
+    60,
     window.innerWidth / window.innerHeight,
-    1,
+      0.5,
     2000
   );
-  camera.position.set(0, 200, 300);
-  rotateCamera();
+  camera.position.set(0, 25, 0);
   scene = new THREE.Scene();
   scene.background = new THREE.Color("#1a1a1a");
   scene.fog = new THREE.Fog("#1a1a1a", 1000, 2000);
   // Поверхность
   // —-----------------------------------------------------------------------------------------------------------------—
-  const mesh = new THREE.Mesh(
+   mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(4000, 4000),
     new THREE.MeshPhongMaterial({ color: "#4a4a4a", depthWrite: false })
   );
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
+
+  // const camera_pivot = new THREE.Object3D();
+  // scene.add(camera_pivot);
+  // camera_pivot.add(camera);
+  // camera.lookAt(camera_pivot.position);
+  // rotateCamera(camera_pivot);
+  // moveCameraByEllipse(camera_pivot)
+
   scene.add(mesh);
 
-  const grid = new THREE.GridHelper(4000, 50, "#000000", "#000000");
-  grid.material.opacity = 0.2;
-  grid.material.transparent = true;
-  scene.add(grid);
+  // const grid = new THREE.GridHelper(4000, 50, "#000000", "#000000");
+  // grid.material.opacity = 0.2;
+  // grid.material.transparent = true;
+  // scene.add(grid);
   // Освещение
   // —-----------------------------------------------------------------------------------------------------------------—
-  console.log(scene);
 
   let t = new THREE.Object3D();
   t.translateX(0);
@@ -87,7 +118,7 @@ function init() {
   spotLight.shadow.camera.near = 10;
   spotLight.shadow.camera.far = 1000;
   spotLight.shadow.focus = 1;
-  spotLightHelper = new THREE.SpotLightHelper(spotLight, "#ff6767");
+  // spotLightHelper = new THREE.SpotLightHelper(spotLight, "#ff6767");
   scene.add(spotLight);
   scene.add(spotLightHelper);
 
@@ -112,7 +143,7 @@ function init() {
   // Модель
   // —-----------------------------------------------------------------------------------------------------------------—
   const loader = new FBXLoader();
-  loader.load("models/Choosen One Ava Model.fbx", function (object) {
+  loader.load("models/engine.fbx", function (object) {
     object.traverse(function (child) {
       if (child.isMesh) {
         child.castShadow = true;
@@ -120,7 +151,7 @@ function init() {
         child.flatshading = true;
       }
     });
-
+    object.position.set(20, 5, 30);
     scene.add(object);
   });
 }
@@ -131,172 +162,52 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function rotateCamera() {
+function rotateCamera(camera_pivot) {
   const rotations = [
     {
-      name: "anfas left",
-      rotate: { x: 0, y: 75, z: 0 },
+      name: "3/4 left",
+      rotateY: 75,
     },
     {
       name: "fas",
-      rotate: { x: 0, y: 0, z: 0 },
+      rotateY: 0,
     },
     {
-      name: "anfas right",
-      rotate: { x: 0, y: -75, z: 0 },
+      name: "3/4 right",
+      rotateY: -75,
     },
     {
       name: "profile left",
-      rotate: { x: 0, y: 90, z: 0 },
+      rotateY: 90,
     },
     {
       name: "profile right",
-      rotate: { x: 0, y: -90, z: 0 },
+      rotateY: -90,
     },
   ];
   const btns = document.querySelector(".btns");
-
+  const Y_AXIS = new THREE.Vector3(0, 1, 0);
+  let lastAngle = 0;
   btns.addEventListener("click", (e) => {
     const rotation = rotations.find(
       (el) => el.name === e.target.textContent?.toLowerCase()
     );
-    scene.rotation.y = (rotation.rotate.y * Math.PI) / 180;
+
+    camera_pivot.rotateOnAxis(Y_AXIS, lastAngle);
+    const angle = (rotation.rotateY * Math.PI) / 180;
+    lastAngle = -angle;
+    camera_pivot.rotateOnAxis(Y_AXIS, angle);
   });
 }
 
-function createPanel() {
-  const gui = new GUI({ width: 400 });
-
-  const animControl = gui.addFolder("Управление анимацией");
-
-  settings = {
-    Скорость: 1.0,
-    "Пауза/Продолжить": pauseContinue,
-    X: spotLight.position.x,
-    Y: spotLight.position.y,
-    Z: spotLight.position.z,
-    Цвет: spotLight.color.getHex(),
-    Интенсивность: spotLight.intensity,
-    Дистанция: spotLight.distance,
-    Угол: spotLight.angle,
-    Полутень: spotLight.penumbra,
-    Упадок: spotLight.decay,
-  };
-
-  settings1 = {
-    X: dirLight.position.x,
-    Y: dirLight.position.y,
-    Z: dirLight.position.z,
-    Цвет: dirLight.color.getHex(),
-    Интенсивность: dirLight.intensity,
-  };
-
-  animControl
-    .add(settings, "Скорость", 0.0, 2.0, 0.01)
-    .onChange(animationSpeed);
-  animControl.add(settings, "Пауза/Продолжить");
-
-  animControl.close();
-
-  const dirLightControl = gui.addFolder("Освещение (dirLight)");
-
-  dirLightControl.add(settings1, "X", 0, 300).onChange(function (val) {
-    dirLight.position.x = val;
-    dirLightHelper.update();
-  });
-
-  dirLightControl.add(settings1, "Y", 0, 300).onChange(function (val) {
-    dirLight.position.y = val;
-    dirLightHelper.update();
-  });
-
-  dirLightControl.add(settings1, "Z", -300, 0).onChange(function (val) {
-    dirLight.position.z = val;
-    dirLightHelper.update();
-  });
-
-  dirLightControl.addColor(settings1, "Цвет").onChange(function (val) {
-    dirLight.color.setHex(val);
-  });
-
-  dirLightControl
-    .add(settings1, "Интенсивность", 0, 3)
-    .onChange(function (val) {
-      dirLight.intensity = val;
-      dirLightHelper.dispose();
-    });
-
-  dirLightControl.open();
-
-  const spotLightControl = gui.addFolder("Освещение (spotLight)");
-
-  spotLightControl.add(settings, "X", -150, 150).onChange(function (val) {
-    spotLight.position.x = val;
-    spotLightHelper.update();
-  });
-
-  spotLightControl.add(settings, "Y", 50, 350).onChange(function (val) {
-    spotLight.position.y = val;
-    spotLightHelper.update();
-  });
-
-  spotLightControl.add(settings, "Z", 50, 350).onChange(function (val) {
-    spotLight.position.z = val;
-    spotLightHelper.update();
-  });
-
-  spotLightControl.addColor(settings, "Цвет").onChange(function (val) {
-    spotLight.color.setHex(val);
-  });
-
-  spotLightControl
-    .add(settings, "Интенсивность", 0, 3)
-    .onChange(function (val) {
-      spotLight.intensity = val;
-    });
-
-  spotLightControl
-    .add(settings, "Дистанция", 200, 1500)
-    .onChange(function (val) {
-      spotLight.distance = val;
-      spotLightHelper.update();
-    });
-
-  spotLightControl
-    .add(settings, "Угол", 0, Math.PI / 2)
-    .onChange(function (val) {
-      spotLight.angle = val;
-      spotLightHelper.update();
-    });
-
-  spotLightControl.add(settings, "Полутень", 0, 1).onChange(function (val) {
-    spotLight.penumbra = val;
-  });
-
-  spotLightControl.add(settings, "Упадок", 1, 2).onChange(function (val) {
-    spotLight.decay = val;
-  });
-
-  spotLightControl.open();
-
-  function animationSpeed(speed) {
-    mixer.timeScale = speed;
-  }
-
-  function pauseContinue() {
-    actions.forEach(function (action) {
-      if (action.paused == false) {
-        action.paused = true;
-      } else {
-        action.paused = false;
-      }
-    });
-  }
-}
 
 function animate() {
   requestAnimationFrame(animate);
-  camera.updateMatrixWorld();
+  camera.position.x = Math.cos(angle * Math.PI / 180) * horizontalRadius;
+  camera.position.z = Math.sin(angle * Math.PI / 180) * verticalRadius;
+
+  angle += (Math.PI / 180) * angularSpeed * delta + 2; // приращение угла
+  camera.lookAt(mesh.position);
   renderer.render(scene, camera);
   stats.update();
 }
