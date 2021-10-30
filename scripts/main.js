@@ -2,18 +2,16 @@ import * as THREE from "https://cdn.skypack.dev/three";
 import { OrbitControls } from "https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js";
 import { FBXLoader } from "https://cdn.skypack.dev/three/examples/jsm/loaders/FBXLoader.js";
 import Stats from "https://cdn.skypack.dev/three/examples/jsm/libs/stats.module.js";
+import { GUI } from "https://cdn.skypack.dev/three/examples/jsm/libs/dat.gui.module.js";
 
 let camera, scene, renderer, stats, mesh;
 let spotLight, dirLight, spotLightHelper, dirLightHelper;
 
-let clock = new THREE.Clock();
 let angle = 0; // текущий угол
-let angularSpeed = THREE.Math.degToRad(45); // угловая скорость - градусов в секунду
-let delta = 12;
-
-
 let horizontalRadius = 120;
 let verticalRadius = 200;
+let startAnimation = false;
+
 document.addEventListener('keyup', (e) => {
   if (e.code === 'Escape') {
     document.querySelector('.modal').classList.remove('active');
@@ -24,21 +22,14 @@ document.getElementById('start_animation').addEventListener('click', () => {
   document.querySelector('.modal').classList.add('active');
   document.querySelector('.overlay').classList.add('active');
 })
-document.getElementById('submit').addEventListener('click', () => {
-  document.querySelector('.modal').classList.remove('active');
-  document.querySelector('.overlay').classList.remove('active');
 
-  horizontalRadius = +document.getElementById('horizontal').value;
-  verticalRadius = +document.getElementById('vertical').value;
-
-})
 document.querySelector('.overlay').addEventListener('click', () => {
   document.querySelector('.modal').classList.remove('active');
   document.querySelector('.overlay').classList.remove('active');
 });
 init();
 animate();
-
+createPanel();
 function init() {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -49,7 +40,7 @@ function init() {
       0.5,
     2000
   );
-  camera.position.set(0, 25, 0);
+  camera.position.set(200, 65, 20);
   scene = new THREE.Scene();
   scene.background = new THREE.Color("#1a1a1a");
   scene.fog = new THREE.Fog("#1a1a1a", 1000, 2000);
@@ -62,12 +53,13 @@ function init() {
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
 
-  // const camera_pivot = new THREE.Object3D();
-  // scene.add(camera_pivot);
-  // camera_pivot.add(camera);
-  // camera.lookAt(camera_pivot.position);
-  // rotateCamera(camera_pivot);
-  // moveCameraByEllipse(camera_pivot)
+  const camera_pivot = new THREE.Object3D();
+  scene.add(camera_pivot);
+  camera_pivot.add(camera);
+  camera.lookAt(camera_pivot.position);
+  if (!startAnimation) {
+      rotateCamera(camera_pivot);
+  }
 
   scene.add(mesh);
 
@@ -100,12 +92,11 @@ function init() {
   dirLight.shadow.camera.right = 120;
   dirLight.shadow.camera.near = 0;
   dirLight.shadow.camera.far = 1000;
-  dirLightHelper = new THREE.DirectionalLightHelper(dirLight, 1, "#67c2ff");
   scene.add(dirLight);
   scene.add(dirLightHelper);
 
   spotLight = new THREE.SpotLight("#ffffff", 1.7);
-  spotLight.position.set(0, 200, 200);
+  spotLight.position.set(-400, 200, 200);
   spotLight.angle = Math.PI / 5;
   spotLight.penumbra = 0.5;
   spotLight.decay = 1.5;
@@ -151,7 +142,7 @@ function init() {
         child.flatshading = true;
       }
     });
-    object.position.set(20, 5, 30);
+    object.position.set(20, 45, 30);
     scene.add(object);
   });
 }
@@ -199,15 +190,241 @@ function rotateCamera(camera_pivot) {
     camera_pivot.rotateOnAxis(Y_AXIS, angle);
   });
 }
+function createPanel() {
+  const gui = new GUI({width: 400});
 
 
+ const settings = {
+
+    X: spotLight.position.x,
+    Y: spotLight.position.y,
+    Z: spotLight.position.z,
+    Цвет: spotLight.color.getHex(),
+    Интенсивность: spotLight.intensity,
+    Дистанция: spotLight.distance,
+    Угол: spotLight.angle,
+    Полутень: spotLight.penumbra,
+    Упадок: spotLight.decay,
+  };
+
+  const settings1 = {
+    X: dirLight.position.x,
+    Y: dirLight.position.y,
+    Z: dirLight.position.z,
+    Цвет: dirLight.color.getHex(),
+    Интенсивность: dirLight.intensity,
+  };
+
+
+
+  const dirLightControl = gui.addFolder("Освещение (dirLight)");
+
+  dirLightControl.add(settings1, "X", 0, 300).onChange(function (val) {
+    dirLight.position.x = val;
+  });
+
+  dirLightControl.add(settings1, "Y", 0, 300).onChange(function (val) {
+    dirLight.position.y = val;
+  });
+
+  dirLightControl.add(settings1, "Z", -300, 0).onChange(function (val) {
+    dirLight.position.z = val;
+  });
+
+  dirLightControl.addColor(settings1, "Цвет").onChange(function (val) {
+    dirLight.color.setHex(val);
+  });
+
+  dirLightControl
+      .add(settings1, "Интенсивность", 0, 3)
+      .onChange(function (val) {
+        dirLight.intensity = val;
+      });
+
+  dirLightControl.open();
+
+  const spotLightControl = gui.addFolder("Освещение (spotLight)");
+
+  spotLightControl.add(settings, "X", -150, 150).onChange(function (val) {
+    spotLight.position.x = val;
+  });
+
+  spotLightControl.add(settings, "Y", 50, 350).onChange(function (val) {
+    spotLight.position.y = val;
+  });
+
+  spotLightControl.add(settings, "Z", 50, 350).onChange(function (val) {
+    spotLight.position.z = val;
+  });
+
+  spotLightControl.addColor(settings, "Цвет").onChange(function (val) {
+    spotLight.color.setHex(val);
+  });
+
+  spotLightControl
+      .add(settings, "Интенсивность", 0, 3)
+      .onChange(function (val) {
+        spotLight.intensity = val;
+      });
+
+  spotLightControl
+      .add(settings, "Дистанция", 200, 1500)
+      .onChange(function (val) {
+        spotLight.distance = val;
+      });
+
+  spotLightControl
+      .add(settings, "Угол", 0, Math.PI / 2)
+      .onChange(function (val) {
+        spotLight.angle = val;
+      });
+
+  spotLightControl.add(settings, "Полутень", 0, 1).onChange(function (val) {
+    spotLight.penumbra = val;
+  });
+
+  spotLightControl.add(settings, "Упадок", 1, 2).onChange(function (val) {
+    spotLight.decay = val;
+  });
+
+  spotLightControl.open();
+}
+
+document.querySelector('#stop_animation').addEventListener("click", (e) => {
+    startAnimation = false;
+    document.querySelectorAll('.btn:not(#stop_animation)').forEach(btn => btn.classList.remove('hide'));
+    e.currentTarget.classList.remove('show');
+})
+
+
+let motionOptions = {};
+let type = 'none';
+let speed = 0;
+function getSpeed(type, options) {
+    let speed = options.startSpeed;
+
+    return () => {
+        if (type === 'linear' && speed < options.endSpeed) {
+            speed += options.step;
+            return (options.k || 1) * speed + 5;
+        }else if(type === 'exponential' && speed < options.endSpeed){
+            speed += options.step;
+            return Math.exp(speed);
+        }else if(type === 'quadratic' && speed < options.endSpeed){
+            speed += options.step;
+            return (options.a || 1) * speed ** 2 + (options.b || 1) * speed + 15;
+        }
+
+        switch (type) {
+            case 'linear':
+                return (options.k || 1) * speed + 5;
+            case 'exponential':
+                return Math.exp(speed);
+            case 'quadratic':
+                return (options.a || 1) * speed ** 2 + (options.b || 1) * speed + 15;
+            default:
+                return 12;
+        }
+    };
+}
+document.getElementById('submit').addEventListener('click', (e) => {
+
+      horizontalRadius = +document.getElementById('horizontal').value;
+      verticalRadius = +document.getElementById('vertical').value;
+      if (horizontalRadius <= 0 || verticalRadius <= 0) {
+          if (horizontalRadius <= 0) {
+              document.querySelector('.hor').classList.add('show');
+          }
+          if (verticalRadius <= 0) {
+              document.querySelector('.vert').classList.add('show');
+          }
+          return;
+      }
+    document.querySelectorAll('.error').forEach(it => it.classList.remove('show'))
+    document.querySelector('.modal').classList.remove('active');
+    document.querySelector('.overlay').classList.remove('active');
+    document.querySelectorAll('.btn:not(#stop_animation)').forEach(btn => btn.classList.add('hide'));
+    document.querySelector('#stop_animation').classList.add('show');
+
+    const typeSpeed = document.querySelector('.select').name;
+
+    switch (typeSpeed){
+        case 'quad':
+            motionOptions = {
+                a: +document.getElementById('val_a').value,
+                b: +document.getElementById('val_b').value,
+                startSpeed: +document.getElementById('min').value,
+                endSpeed: +document.getElementById('max').value,
+                step: 0.05
+            };
+            break;
+        case 'lin':
+            motionOptions = {
+                k: +document.getElementById('val_k').value,
+                startSpeed: +document.getElementById('min').value,
+                endSpeed: +document.getElementById('max').value,
+                step: 0.05
+            };
+            break;
+        case 'exp':
+            motionOptions = {
+                startSpeed: +document.getElementById('min').value,
+                endSpeed: +document.getElementById('max').value,
+                step: 0.05
+            };
+            break;
+        default:
+            motionOptions = {};
+            break;
+    }
+
+    speed = getSpeed(type, motionOptions);
+    startAnimation = true;
+
+})
+
+let angularSpeed = THREE.Math.degToRad(45); // угловая скорость - градусов в секунду
+
+
+
+document.querySelector('.modal__btns').addEventListener('click', (e) => {
+    document.querySelectorAll('.modal__btn').forEach(btn => btn.classList.remove('select'));
+    e.target.classList.add('select')
+    switch (e.target.name) {
+        case 'quad':
+            document.querySelector('.linear').classList.remove('active');
+            document.querySelector('.quadratic').classList.add('active');
+            document.querySelector('.modal__range').classList.add('active');
+            type = 'quadratic';
+            break;
+        case 'lin':
+            document.querySelector('.linear').classList.add('active');
+            document.querySelector('.quadratic').classList.remove('active');
+            document.querySelector('.modal__range').classList.add('active');
+            type = 'linear';
+            break;
+        case 'exp':
+            document.querySelector('.linear').classList.remove('active');
+            document.querySelector('.quadratic').classList.remove('active');
+            document.querySelector('.modal__range').classList.add('active');
+            type = 'exponential';
+            break;
+        default:
+            document.querySelector('.linear').classList.remove('active');
+            document.querySelector('.quadratic').classList.remove('active');
+            document.querySelector('.modal__range').classList.remove('active');
+            type = 'none';
+    }
+})
 function animate() {
-  requestAnimationFrame(animate);
-  camera.position.x = Math.cos(angle * Math.PI / 180) * horizontalRadius;
-  camera.position.z = Math.sin(angle * Math.PI / 180) * verticalRadius;
+  if (startAnimation) {
+    camera.position.x = Math.cos(angle * Math.PI / 180) * horizontalRadius;
+    camera.position.z = Math.sin(angle * Math.PI / 180) * verticalRadius;
 
-  angle += (Math.PI / 180) * angularSpeed * delta + 2; // приращение угла
-  camera.lookAt(mesh.position);
+    angle += (Math.PI / 180) * angularSpeed * Math.abs(speed()); // приращение угла
+    camera.lookAt(mesh.position);
+  }
+  requestAnimationFrame(animate);
   renderer.render(scene, camera);
   stats.update();
 }

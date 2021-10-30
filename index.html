@@ -17,19 +17,53 @@
       <button class="btn">Profile right</button>
       <button class="btn">Profile left</button>
       <button class="btn">3/4 left</button>
-      <button class="btn" id="start_animation">Запустить анимацию</button>
+      <button class="btn start" id="start_animation">Запустить анимацию</button>
+      <button class="btn stop" id="stop_animation">Остановить анимацию</button>
     </div>
     <div class="overlay"></div>
     <div class="modal">
       <form class="modal__body">
         <label>
           <span>Горизонтальный радиус</span>
-          <input type="text" id="horizontal">
+          <input type="text" id="horizontal" value="120">
+          <span class="error hor">Число должно быть больше нуля</span>
         </label>
         <label>
           <span>Вертикальный радиус</span>
-          <input type="text" id="vertical">
+          <input type="text" id="vertical" value="300">
+          <span class="error vert">Число должно быть больше нуля</span>
         </label>
+        <div class="modal__speed">
+          <span class="modal__speed-title">Функция скорости</span>
+          <div class="modal__btns">
+            <button class="modal__btn" name="quad" id="quad" type="button">ax<sup>2</sup> + bx + c</button>
+            <button class="modal__btn" name="exp" id="e" type="button">e<sup>x</sup></button>
+            <button class="modal__btn" name="lin" id="lin" type="button">kx + b</button>
+            <button class="modal__btn select" name="none" id="none" type="button">Равномерное движение</button>
+          </div>
+          <div class="modal__options">
+            <label>
+              <div class="modal__range">
+                <input type="text" class="modal__range-min" id="min" />
+                <span class="modal__range-start"> ⩽ x ⩽ </span>
+                <input type="text" class="modal__range-max" id="max" />
+              </div>
+            </label>
+            <div class="linear">
+              <div>
+                <input type="text" id="val_k" placeholder="Введите k">
+              </div>
+            </div>
+            <div class="quadratic">
+              <div>
+                <input type="text" id="val_a" placeholder="Введите a">
+              </div>
+              <div>
+                <input type="text" id="val_b" placeholder="Введите b">
+              </div>
+            </div>
+          </div>
+        </div>
         <button id="submit" type="button" class="modal__submit">Применить</button>
       </form>
     </div>
