@@ -9,9 +9,10 @@ let spotLight, dirLight, spotLightHelper, dirLightHelper;
 
 let angle = 0; // текущий угол
 let horizontalRadius = 120;
-let verticalRadius = 200;
+let verticalRadius = 300;
 let startAnimation = false;
 
+document.querySelector('input[type="checkbox"]').checked = true;
 document.addEventListener('keyup', (e) => {
   if (e.code === 'Escape') {
     document.querySelector('.modal').classList.remove('active');
@@ -40,19 +41,21 @@ function init() {
       0.5,
     2000
   );
-  camera.position.set(200, 65, 20);
+  camera.position.set(200, 155, 20);
+
   scene = new THREE.Scene();
   scene.background = new THREE.Color("#1a1a1a");
   scene.fog = new THREE.Fog("#1a1a1a", 1000, 2000);
   // Поверхность
   // —-----------------------------------------------------------------------------------------------------------------—
+
    mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(4000, 4000),
     new THREE.MeshPhongMaterial({ color: "#4a4a4a", depthWrite: false })
   );
+   mesh.position.set(20, 145, 30)
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
-
   const camera_pivot = new THREE.Object3D();
   scene.add(camera_pivot);
   camera_pivot.add(camera);
@@ -60,8 +63,8 @@ function init() {
   if (!startAnimation) {
       rotateCamera(camera_pivot);
   }
-
   scene.add(mesh);
+
 
   // const grid = new THREE.GridHelper(4000, 50, "#000000", "#000000");
   // grid.material.opacity = 0.2;
@@ -109,7 +112,6 @@ function init() {
   spotLight.shadow.camera.near = 10;
   spotLight.shadow.camera.far = 1000;
   spotLight.shadow.focus = 1;
-  // spotLightHelper = new THREE.SpotLightHelper(spotLight, "#ff6767");
   scene.add(spotLight);
   scene.add(spotLightHelper);
 
@@ -142,11 +144,28 @@ function init() {
         child.flatshading = true;
       }
     });
-    object.position.set(20, 45, 30);
+    object.position.set(20, 145, 30);
     scene.add(object);
   });
 }
+function createEllipse(a, b) {
+    const curve = new THREE.EllipseCurve(
+        0,  0,            // ax, aY
+        a, b,           // xRadius, yRadius
+        0,  2 * Math.PI,  // aStartAngle, aEndAngle
+        false,            // aClockwise
+        0                 // aRotation
+    );
 
+    const points = curve.getPoints( 50 );
+
+    points.forEach(p => {p.z = p.y; p.y = 145}); // z = -y; y = 0
+
+    let g = new THREE.BufferGeometry().setFromPoints(points);
+    let m = new THREE.LineBasicMaterial({color: "red"});
+    let l = new THREE.Line(g, m);
+    scene.add(l);
+}
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -156,23 +175,23 @@ function onWindowResize() {
 function rotateCamera(camera_pivot) {
   const rotations = [
     {
-      name: "3/4 left",
+      name: "3/4 слева",
       rotateY: 75,
     },
     {
-      name: "fas",
+      name: "Фас",
       rotateY: 0,
     },
     {
-      name: "3/4 right",
+      name: "3/4 справа",
       rotateY: -75,
     },
     {
-      name: "profile left",
+      name: "Левый профиль",
       rotateY: 90,
     },
     {
-      name: "profile right",
+      name: "Правый профиль",
       rotateY: -90,
     },
   ];
@@ -181,7 +200,7 @@ function rotateCamera(camera_pivot) {
   let lastAngle = 0;
   btns.addEventListener("click", (e) => {
     const rotation = rotations.find(
-      (el) => el.name === e.target.textContent?.toLowerCase()
+      (el) => el.name.toLowerCase() === e.target.textContent?.toLowerCase()
     );
 
     camera_pivot.rotateOnAxis(Y_AXIS, lastAngle);
@@ -300,6 +319,7 @@ document.querySelector('#stop_animation').addEventListener("click", (e) => {
 let motionOptions = {};
 let type = 'none';
 let speed = 0;
+
 function getSpeed(type, options) {
     let speed = options.startSpeed;
 
@@ -313,6 +333,9 @@ function getSpeed(type, options) {
         }else if(type === 'quadratic' && speed < options.endSpeed){
             speed += options.step;
             return (options.a || 1) * speed ** 2 + (options.b || 1) * speed + 15;
+        }else if(type === 'root' && speed < options.endSpeed){
+            speed += options.step;
+            return Math.sqrt(speed);
         }
 
         switch (type) {
@@ -322,8 +345,10 @@ function getSpeed(type, options) {
                 return Math.exp(speed);
             case 'quadratic':
                 return (options.a || 1) * speed ** 2 + (options.b || 1) * speed + 15;
+            case 'root':
+                return Math.sqrt(speed);
             default:
-                return 12;
+                return 20;
         }
     };
 }
@@ -331,7 +356,11 @@ document.getElementById('submit').addEventListener('click', (e) => {
 
       horizontalRadius = +document.getElementById('horizontal').value;
       verticalRadius = +document.getElementById('vertical').value;
-      if (horizontalRadius <= 0 || verticalRadius <= 0) {
+
+      if (!!document.querySelector('input[type="checkbox"]').checked)
+          createEllipse(horizontalRadius, verticalRadius);
+
+    if (horizontalRadius <= 0 || verticalRadius <= 0) {
           if (horizontalRadius <= 0) {
               document.querySelector('.hor').classList.add('show');
           }
@@ -367,6 +396,13 @@ document.getElementById('submit').addEventListener('click', (e) => {
             };
             break;
         case 'exp':
+            motionOptions = {
+                startSpeed: +document.getElementById('min').value,
+                endSpeed: +document.getElementById('max').value,
+                step: 0.05
+            };
+            break;
+        case 'root':
             motionOptions = {
                 startSpeed: +document.getElementById('min').value,
                 endSpeed: +document.getElementById('max').value,
@@ -409,6 +445,12 @@ document.querySelector('.modal__btns').addEventListener('click', (e) => {
             document.querySelector('.modal__range').classList.add('active');
             type = 'exponential';
             break;
+        case 'root':
+            document.querySelector('.linear').classList.remove('active');
+            document.querySelector('.quadratic').classList.remove('active');
+            document.querySelector('.modal__range').classList.add('active');
+            type = 'root';
+            break;
         default:
             document.querySelector('.linear').classList.remove('active');
             document.querySelector('.quadratic').classList.remove('active');
@@ -416,12 +458,12 @@ document.querySelector('.modal__btns').addEventListener('click', (e) => {
             type = 'none';
     }
 })
+
 function animate() {
-  if (startAnimation) {
+    if (startAnimation) {
     camera.position.x = Math.cos(angle * Math.PI / 180) * horizontalRadius;
     camera.position.z = Math.sin(angle * Math.PI / 180) * verticalRadius;
-
-    angle += (Math.PI / 180) * angularSpeed * Math.abs(speed()); // приращение угла
+    angle += (Math.PI / 180) * angularSpeed * Math.abs(speed());   // Приращение угла
     camera.lookAt(mesh.position);
   }
   requestAnimationFrame(animate);

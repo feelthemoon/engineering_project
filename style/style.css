@@ -167,15 +167,15 @@ label:last-child {
 .modal__options-x.active{
   display: block;
 }
-.linear, .quadratic {
+.linear, .quadratic, .logarithmic {
   margin-top: 10px;
   margin-bottom: 20px;
   display: none;
 }
-.linear.active, .quadratic.active{
+.linear.active, .quadratic.active, .logarithmic.active{
   display: block;
 }
-.linear > div, .quadratic > div {
+.linear > div, .quadratic > div, .logarithmic > div {
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -190,7 +190,10 @@ label:last-child {
 }
 .modal__range-min, .modal__range-max{
   max-width: 80px;
-  padding: 10px 15px;
+  padding: 10px 15px!important;
   margin-left: 10px;
   margin-right: 10px;
+}
+.modal__speed{
+  margin-top: 30px;
 }

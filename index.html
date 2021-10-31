@@ -12,11 +12,11 @@
   </head>
   <body>
     <div class="btns">
-      <button class="btn">3/4 right</button>
-      <button class="btn">Fas</button>
-      <button class="btn">Profile right</button>
-      <button class="btn">Profile left</button>
-      <button class="btn">3/4 left</button>
+      <button class="btn">3/4 справа</button>
+      <button class="btn">Фас</button>
+      <button class="btn">Правый профиль</button>
+      <button class="btn">Левый профиль</button>
+      <button class="btn">3/4 слева</button>
       <button class="btn start" id="start_animation">Запустить анимацию</button>
       <button class="btn stop" id="stop_animation">Остановить анимацию</button>
     </div>
@@ -33,14 +33,20 @@
           <input type="text" id="vertical" value="300">
           <span class="error vert">Число должно быть больше нуля</span>
         </label>
+        <label>
+          <input type="checkbox" />
+          <span>Показать траекторию движения</span>
+        </label>
         <div class="modal__speed">
           <span class="modal__speed-title">Функция скорости</span>
           <div class="modal__btns">
             <button class="modal__btn" name="quad" id="quad" type="button">ax<sup>2</sup> + bx + c</button>
             <button class="modal__btn" name="exp" id="e" type="button">e<sup>x</sup></button>
             <button class="modal__btn" name="lin" id="lin" type="button">kx + b</button>
+            <button class="modal__btn" name="root" id="root" type="button">&#x221a;x</button>
             <button class="modal__btn select" name="none" id="none" type="button">Равномерное движение</button>
           </div>
+
           <div class="modal__options">
             <label>
               <div class="modal__range">
