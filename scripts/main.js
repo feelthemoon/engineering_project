@@ -56,6 +56,7 @@ function init() {
    mesh.position.set(20, 145, 30)
   mesh.rotation.x = -Math.PI / 2;
   mesh.receiveShadow = true;
+
   const camera_pivot = new THREE.Object3D();
   scene.add(camera_pivot);
   camera_pivot.add(camera);
@@ -66,10 +67,11 @@ function init() {
   scene.add(mesh);
 
 
-  // const grid = new THREE.GridHelper(4000, 50, "#000000", "#000000");
-  // grid.material.opacity = 0.2;
-  // grid.material.transparent = true;
-  // scene.add(grid);
+  const grid = new THREE.GridHelper(4000, 50, "#000000", "#000000");
+  grid.material.opacity = 0.2;
+  grid.material.transparent = true;
+  scene.add(grid);
+
   // Освещение
   // —-----------------------------------------------------------------------------------------------------------------—
 
@@ -157,7 +159,7 @@ function createEllipse(a, b) {
         0                 // aRotation
     );
 
-    const points = curve.getPoints( 50 );
+    const points = curve.getPoints( 150 );
 
     points.forEach(p => {p.z = p.y; p.y = 145}); // z = -y; y = 0
 
