@@ -19,6 +19,9 @@
       <button class="btn">3/4 слева</button>
       <button class="btn start" id="start_animation">Запустить анимацию</button>
       <button class="btn stop" id="stop_animation">Остановить анимацию</button>
+      <button class="btn video" id="btn-start">Начать запись видео</button>
+      <button class="btn video" id="btn-stop">Закончить запись видео</button>
+
     </div>
     <div class="overlay"></div>
     <div class="modal">
@@ -72,7 +75,9 @@
         </div>
         <button id="submit" type="button" class="modal__submit">Применить</button>
       </form>
+      <video controls autoplay playsinline></video>
     </div>
+    <script defer src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
     <script type="module" src="scripts/main.js"></script>
   </body>
 </html>
