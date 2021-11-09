@@ -3,14 +3,20 @@ import { OrbitControls } from "https://cdn.skypack.dev/three/examples/jsm/contro
 import { FBXLoader } from "https://cdn.skypack.dev/three/examples/jsm/loaders/FBXLoader.js";
 import Stats from "https://cdn.skypack.dev/three/examples/jsm/libs/stats.module.js";
 import { GUI } from "https://cdn.skypack.dev/three/examples/jsm/libs/dat.gui.module.js";
+import Video from './video.js';
 
 let camera, scene, renderer, stats, mesh;
 let spotLight, dirLight, spotLightHelper, dirLightHelper;
+
 
 let angle = 0; // текущий угол
 let horizontalRadius = 120;
 let verticalRadius = 300;
 let startAnimation = false;
+
+new Video(document.querySelector('video'),
+    document.getElementById('btn-start'),
+    document.getElementById('btn-stop'));
 
 document.querySelector('input[type="checkbox"]').checked = true;
 document.addEventListener('keyup', (e) => {
@@ -315,6 +321,8 @@ document.querySelector('#stop_animation').addEventListener("click", (e) => {
     startAnimation = false;
     document.querySelectorAll('.btn:not(#stop_animation)').forEach(btn => btn.classList.remove('hide'));
     e.currentTarget.classList.remove('show');
+    document.querySelector('.modal').classList.add('active');
+    document.querySelector('.overlay').classList.add('active');
 })
 
 
@@ -374,7 +382,7 @@ document.getElementById('submit').addEventListener('click', (e) => {
     document.querySelectorAll('.error').forEach(it => it.classList.remove('show'))
     document.querySelector('.modal').classList.remove('active');
     document.querySelector('.overlay').classList.remove('active');
-    document.querySelectorAll('.btn:not(#stop_animation)').forEach(btn => btn.classList.add('hide'));
+    document.querySelectorAll('.btn:not(#stop_animation):not(.video)').forEach(btn => btn.classList.add('hide'));
     document.querySelector('#stop_animation').classList.add('show');
 
     const typeSpeed = document.querySelector('.select').name;
